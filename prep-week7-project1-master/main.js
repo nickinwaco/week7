@@ -1,65 +1,99 @@
-/*
-=======================================================
-    ** Week 7 - Project 1  **
-*** Ajax and JSON with OMDB ***
+$(document).ready(function() {
 
-This assignment is more open than the past assignments.
-You are free to build a simple web page that interacts
-with OMBD. It can simply display data within the HTML
-page or buttons and text fields can be added to interact
-with the data and update the page accordingly.
+    // Question #1
+    $('#submitbtn').click(function() {
+        var xhr = new XMLHttpRequest();
 
-Have fun!
-=======================================================
-*/
-// $(document).ready(function() {
-//
-//
-// //1. OMDB call
-// $('#submitBtn').click(function() {
-//     var xhr = new XMLHttpRequest();
-//     xhr.addEventListener('load', function() {
-//         if (xhr.status !== 200) {
-//             console.log("success")
-//             return;
-//         }
-//         var data = JSON.parse(xhr.responseText);
-//     // console.log(data["imdbID"]);
-//     });
-//     xhr.open('GET', 'http://www.omdbapi.com/?t=Frozen');
-//     xhr.send();
-//     //console.log(data);
-//       console.log(xhr);
-//
-//     });
-//
-//
-//
-//
-//
-//
-//
-// });  // end of JQUERY
+        xhr.addEventListener('load', function() {
+            if (xhr.status !== 200) {
+                return;
+            }
+
+            var data = JSON.parse(xhr.responseText);
+
+            console.log(data);
+        });
+
+    var littleurl = $("#pic-input").val();
+    console.log(littleurl);
+    var bigurl = 'http://www.omdbapi.com/?t='+littleurl;
+    console.log(bigurl);
+        xhr.open('GET', 'bigurl');
+        xhr.send();
+
+    });
+
+}); //end of JQUERY
 
 
 
 
-// Google Maps
-function initMap() {
-  var map = new google.maps.Map(document.getElementById('map'), {
-      center: {
-        lat: 40.771664,
-        lng: -73.966275
+function initAutocomplete() {
+    var map = new google.maps.Map(document.getElementById('map'), {
+        center: {
+            lat: -33.8688,
+            lng: 151.2195
+        },
+        zoom: 10,
+        mapTypeId: 'roadmap'
+    });
 
-//40.786288,-73.971382
-//40.771664,-73.966275
-      },
-    zoom: 18,
-  //mapTypeId: google.maps.MapTypeId.SATELLITE,
-    // 90' North is Top of Page
-    heading: 90,
-    // Tilt map 45 degrees vs 0
-    tilt: 45,
-  });
+    // Create the search box and link it to the UI element.
+    var input = document.getElementById('pac-input');
+    var searchBox = new google.maps.places.SearchBox(input);
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
+    // Bias the SearchBox results towards current map's viewport.
+    map.addListener('bounds_changed', function() {
+        searchBox.setBounds(map.getBounds());
+    });
+
+    var markers = [];
+    // Listen for the event fired when the user selects a prediction and retrieve
+    // more details for that place.
+    searchBox.addListener('places_changed', function() {
+        var places = searchBox.getPlaces();
+
+        if (places.length == 0) {
+            return;
+        }
+
+        // Clear out the old markers.
+        markers.forEach(function(marker) {
+            marker.setMap(null);
+        });
+        markers = [];
+
+        // For each place, get the icon, name and location.
+        var bounds = new google.maps.LatLngBounds();
+        places.forEach(function(place) {
+            if (!place.geometry) {
+                console.log("Returned place contains no geometry");
+                return;
+            }
+            var icon = {
+                url: place.icon,
+                size: new google.maps.Size(71, 71),
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(17, 34),
+                scaledSize: new google.maps.Size(25, 25)
+            };
+
+            // Create a marker for each place.
+            markers.push(new google.maps.Marker({
+                map: map,
+                icon: icon,
+                title: place.name,
+                position: place.geometry.location
+            }));
+
+            if (place.geometry.viewport) {
+                // Only geocodes have viewport.
+                bounds.union(place.geometry.viewport);
+            } else {
+                bounds.extend(place.geometry.location);
+            }
+        });
+        map.fitBounds(bounds);
+    });
 }
